@@ -1,8 +1,8 @@
 import pandas as pd
 from pathlib import Path
 
-DATA_DIR = Path("data/raw/ServerMachineDataset/train")
-PROCESSED_DIR = Path("data/processed/train")
+DATA_DIR = Path("Data/Raw/ServerMachineDataset/train")
+PROCESSED_DIR = Path("Data/processed/train")
 PROCESSED_DIR.mkdir(parents=True, exist_ok=True)
 
 for file in DATA_DIR.glob("*.txt"):
