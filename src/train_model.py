@@ -8,8 +8,8 @@ from sklearn.metrics import (
     roc_auc_score,
     fbeta_score,
 )
-from sklearn.model_selection import train_test_split
-
+from sklearn.model_selection import train_test_split, GroupShuffleSplit
+import matplotlib.pyplot as plt
 
 def train_model(X, y):
     """
@@ -20,9 +20,20 @@ def train_model(X, y):
     X.replace([np.inf, -np.inf], np.nan, inplace=True)
 
     # Split dataset
-    X_train, X_test, y_train, y_test = train_test_split(
-        X, y, test_size=0.2, shuffle=False
-    )
+    if "machine_id" in X.columns:
+        print("\nUsing GroupShuffleSplit to split by machine_id (No data leakage across machines)...")
+        gss = GroupShuffleSplit(n_splits=1, test_size=0.2, random_state=42)
+        train_idx, test_idx = next(gss.split(X, y, groups=X["machine_id"]))
+        
+        X_train = X.iloc[train_idx].drop(columns=["machine_id"])
+        X_test = X.iloc[test_idx].drop(columns=["machine_id"])
+        y_train = y.iloc[train_idx]
+        y_test = y.iloc[test_idx]
+    else:
+        print("\nFallback to standard time-based train_test_split...")
+        X_train, X_test, y_train, y_test = train_test_split(
+            X, y, test_size=0.2, shuffle=False
+        )
 
     print("Training data:", getattr(X_train, 'shape', len(X_train)))
     print("Test data:", getattr(X_test, 'shape', len(X_test)))
@@ -37,11 +48,14 @@ def train_model(X, y):
     print(f"Negative samples: {neg_count}, Positive samples: {pos_count}")
     print(f"Calculated scale_pos_weight: {scale_pos_weight:.2f}")
 
-    # Initialize model
+    # Initialize model with optimized hyperparameters
     model = XGBClassifier(
-        n_estimators=100,
-        max_depth=6,
-        learning_rate=0.1,
+        n_estimators=200,
+        max_depth=8,
+        learning_rate=0.2,
+        subsample=0.9,
+        colsample_bytree=0.7,
+        gamma=0,
         scale_pos_weight=scale_pos_weight,
         random_state=42,
         n_jobs=-1,
@@ -95,5 +109,26 @@ def train_model(X, y):
     print(confusion_matrix(y_test, preds_optimized))
     print("\nClassification Report (Optimized Threshold):")
     print(classification_report(y_test, preds_optimized))
+
+    # Plot and save feature importance
+    print("\nSaving feature importance plot to 'feature_importance.png'...")
+    importance = model.feature_importances_
+    features = X_train.columns
+    
+    # Sort importances
+    indices = np.argsort(importance)[::-1]
+    
+    # Take top 20 features
+    top_n = min(20, len(features))
+    top_indices = indices[:top_n]
+    
+    plt.figure(figsize=(10, 8))
+    plt.title(f"Top {top_n} Feature Importances")
+    plt.bar(range(top_n), importance[top_indices], align="center")
+    plt.xticks(range(top_n), [features[i] for i in top_indices], rotation=45, ha='right')
+    plt.xlim([-1, top_n])
+    plt.tight_layout()
+    plt.savefig('feature_importance.png')
+    plt.close()
 
     return model
