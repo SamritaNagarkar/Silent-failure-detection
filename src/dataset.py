@@ -37,10 +37,9 @@ def build_dataset(df):
 
     y = df["early_warning"]
     
-    # Drop labels and ID columns that shouldn't be used as features
+    # Drop labels that shouldn't be used as features
     cols_to_drop = ["anomaly", "early_warning"]
-    if "machine_id" in df.columns:
-        cols_to_drop.append("machine_id")
+    # We DO NOT drop machine_id here anymore, so we can use it for GroupShuffleSplit in train_model.py
         
     X = df.drop(columns=cols_to_drop)
 

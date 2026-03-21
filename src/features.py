@@ -29,6 +29,13 @@ def create_features(df, machine_id_col="machine_id"):
     """
     sensor_cols = ["sensor_1", "sensor_2", "sensor_3"]
     
+    # Drop sensors that have 0 importance to speed up training and reduce noise
+    dead_sensors = ['sensor_8', 'sensor_17', 'sensor_27', 'sensor_29', 'sensor_37', 'sensor_38']
+    existing_dead = [col for col in dead_sensors if col in df.columns]
+    if existing_dead:
+        print(f"Dropping zero-importance sensors: {existing_dead}")
+        df = df.drop(columns=existing_dead)
+    
     if machine_id_col in df.columns:
         print(f"Creating features grouped by {machine_id_col}...")
         grouper = df.groupby(machine_id_col)
