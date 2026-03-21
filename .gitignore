@@ -1,1 +1,17 @@
 code/
+
+# Ignore data files
+Data/
+data/
+
+# Ignore Python caches
+__pycache__/
+*.pyc
+
+# Ignore model artifacts
+*.model
+
+# Ignore environment/IDE files
+.DS_Store
+.vscode/
+.idea/
