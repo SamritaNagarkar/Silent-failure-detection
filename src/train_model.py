@@ -50,12 +50,13 @@ def train_model(X, y):
 
     # Initialize model with optimized hyperparameters
     model = XGBClassifier(
-        n_estimators=200,
+        n_estimators=300,
         max_depth=8,
-        learning_rate=0.2,
-        subsample=0.9,
-        colsample_bytree=0.7,
-        gamma=0,
+        learning_rate=0.1,
+        subsample=0.8,
+        colsample_bytree=0.8,
+        gamma=1,
+        min_child_weight=3,
         scale_pos_weight=scale_pos_weight,
         random_state=42,
         n_jobs=-1,

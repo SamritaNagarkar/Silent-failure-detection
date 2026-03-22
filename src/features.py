@@ -60,6 +60,13 @@ def create_features(df, machine_id_col="machine_id"):
         df[f"{sensor}_diff"] = grouper[sensor].diff()
         df[f"{sensor}_pct_change"] = grouper[sensor].pct_change()
 
+        # Exponentially Weighted Moving Average (EWMA)
+        df[f"{sensor}_ewma_10"] = grouper[sensor].transform(lambda x: x.ewm(span=10, adjust=False).mean())
+        df[f"{sensor}_ewma_50"] = grouper[sensor].transform(lambda x: x.ewm(span=50, adjust=False).mean())
+
+        # Short vs Long term ratios (captures sudden spikes relative to baseline)
+        df[f"{sensor}_short_long_ratio"] = df[f"{sensor}_ewma_10"] / (df[f"{sensor}_ewma_50"] + 1e-5)
+
         # Rolling slope (trend)
         df[f"{sensor}_slope_50"] = grouper[sensor].transform(lambda x: vectorized_rolling_slope(x, 50))
 

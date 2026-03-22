@@ -21,14 +21,19 @@ def tune_xgboost(X, y, n_iter=5):
     scale_pos_weight = neg_count / pos_count if pos_count > 0 else 1.0
     print(f"Calculated scale_pos_weight: {scale_pos_weight:.2f}")
 
+    # Drop machine_id if it exists since it's a string and XGBoost will fail
+    if "machine_id" in X.columns:
+        X = X.drop(columns=["machine_id"])
+
     # Parameter grid for XGBoost
     param_dist = {
-        'max_depth': [4, 6, 8],
-        'learning_rate': [0.01, 0.05, 0.1, 0.2],
-        'n_estimators': [100, 200],
-        'subsample': [0.7, 0.8, 0.9],
-        'colsample_bytree': [0.7, 0.8, 0.9],
-        'gamma': [0, 1, 5]
+        'max_depth': [4, 6, 8, 10],
+        'learning_rate': [0.01, 0.05, 0.1, 0.15, 0.2],
+        'n_estimators': [100, 200, 300],
+        'subsample': [0.6, 0.7, 0.8, 0.9],
+        'colsample_bytree': [0.6, 0.7, 0.8, 0.9],
+        'gamma': [0, 0.5, 1, 2, 5],
+        'min_child_weight': [1, 3, 5]
     }
 
     # Initialize base model
